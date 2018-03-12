@@ -716,16 +716,14 @@ public class TestClientNoCluster extends Configured implements Tool {
     TableName tableName = TableName.valueOf(BIG_USER_TABLE);
     if (get) {
       try (Table table = sharedConnection.getTable(tableName)){
-        Stopwatch stopWatch = new Stopwatch();
-        stopWatch.start();
+        long start = System.currentTimeMillis();
         for (int i = 0; i < namespaceSpan; i++) {
           byte [] b = format(rd.nextLong());
           Get g = new Get(b);
           table.get(g);
           if (i % printInterval == 0) {
-            LOG.info("Get " + printInterval + "/" + stopWatch.elapsedMillis());
-            stopWatch.reset();
-            stopWatch.start();
+            LOG.info("Get " + printInterval + "/" + (System.currentTimeMillis() - start));
+            start = System.currentTimeMillis();
           }
         }
         LOG.info("Finished a cycle putting " + namespaceSpan + " in " +
@@ -733,17 +731,15 @@ public class TestClientNoCluster extends Configured implements Tool {
       }
     } else {
       try (BufferedMutator mutator = sharedConnection.getBufferedMutator(tableName)) {
-        Stopwatch stopWatch = new Stopwatch();
-        stopWatch.start();
+        long start = System.currentTimeMillis();
         for (int i = 0; i < namespaceSpan; i++) {
           byte [] b = format(rd.nextLong());
           Put p = new Put(b);
           p.add(HConstants.CATALOG_FAMILY, b, b);
           mutator.mutate(p);
           if (i % printInterval == 0) {
-            LOG.info("Put " + printInterval + "/" + stopWatch.elapsedMillis());
-            stopWatch.reset();
-            stopWatch.start();
+            LOG.info("Put " + printInterval + "/" + (System.currentTimeMillis() - start));
+            start = System.currentTimeMillis();
           }
         }
         LOG.info("Finished a cycle putting " + namespaceSpan + " in " +
